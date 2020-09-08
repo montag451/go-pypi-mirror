@@ -63,7 +63,7 @@ func (c *Metadata) MarshalJSON(w io.Writer) error {
 }
 
 func normalize(name string) string {
-	return normRegex.ReplaceAllLiteralString(name, "-")
+	return strings.ToLower(normRegex.ReplaceAllLiteralString(name, "-"))
 }
 
 func parse(s string) (*Metadata, error) {
