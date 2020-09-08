@@ -73,9 +73,11 @@ func (c *createCommand) Execute() error {
 	if err != nil {
 		return err
 	}
-	pkgsByNormName := pkg.ListByNormName(pkgs)
-	rootPkgs := make([]*pkg.Pkg, 0, len(pkgsByNormName))
-	for normName, pkgs := range pkgsByNormName {
+	groups := pkg.GroupByNormName(pkgs)
+	rootPkgs := make([]*pkg.Pkg, 0, len(groups))
+	for _, group := range groups {
+		normName := group.Key.(string)
+		pkgs := group.Pkgs
 		dir := filepath.Join(mirrorDir, normName)
 		err := os.MkdirAll(dir, 0755)
 		if err != nil {

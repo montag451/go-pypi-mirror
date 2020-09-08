@@ -25,43 +25,22 @@ func List(dir string, fixNames bool) ([]*Pkg, error) {
 		return nil, err
 	}
 	if fixNames {
-		for _, pkgs := range ListByNormName(pkgs) {
-			FixNames(pkgs)
+		for _, group := range GroupByNormName(pkgs) {
+			FixNames(group.Pkgs)
 		}
 	}
 	return pkgs, nil
 }
 
-func ListByNormName(pkgs []*Pkg) map[string][]*Pkg {
-	byNormName := make(map[string][]*Pkg)
-	for _, pkg := range pkgs {
-		normName := pkg.Metadata.NormName
-		byNormName[normName] = append(byNormName[normName], pkg)
-	}
-	return byNormName
-}
-
-func ListByName(dir string) (map[string][]*Pkg, error) {
+func ListNames(dir string) ([]string, error) {
 	pkgs, err := List(dir, true)
 	if err != nil {
 		return nil, err
 	}
-	byName := make(map[string][]*Pkg)
-	for _, pkg := range pkgs {
-		name := pkg.Metadata.Name
-		byName[name] = append(byName[name], pkg)
-	}
-	return byName, nil
-}
-
-func ListNames(dir string) ([]string, error) {
-	byName, err := ListByName(dir)
-	if err != nil {
-		return nil, err
-	}
-	names := make([]string, 0, len(byName))
-	for name, _ := range byName {
-		names = append(names, name)
+	groups := GroupByName(pkgs)
+	names := make([]string, 0, len(groups))
+	for _, group := range groups {
+		names = append(names, group.Key.(string))
 	}
 	return names, nil
 }

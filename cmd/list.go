@@ -7,9 +7,6 @@ import (
 	"github.com/montag451/go-pypi-mirror/pkg"
 
 	orderedmap "github.com/wk8/go-ordered-map"
-
-	"golang.org/x/text/collate"
-	"golang.org/x/text/language"
 )
 
 type listCommand struct {
@@ -24,17 +21,13 @@ func (c *listCommand) FlagSet() *flag.FlagSet {
 }
 
 func (c *listCommand) Execute() error {
-	byName, err := pkg.ListByName(c.downloadDir)
+	pkgs, err := pkg.List(c.downloadDir, true)
 	if err != nil {
 		return err
 	}
-	names := make([]string, 0, len(byName))
-	for name, _ := range byName {
-		names = append(names, name)
-	}
-	collator := collate.New(language.MustParse("en-US"))
-	collator.SortStrings(names)
-	for _, name := range names {
+	groups := pkg.GroupByName(pkgs)
+	for _, group := range groups {
+		name := group.Key
 		if c.name != "" && name != c.name {
 			continue
 		}
@@ -42,7 +35,7 @@ func (c *listCommand) Execute() error {
 		if c.name == "" && c.nameOnly {
 			continue
 		}
-		pkgs := byName[name]
+		pkgs := group.Pkgs
 		pkg.SortByVersion(pkgs, true)
 		versions := orderedmap.New()
 		for _, pkg := range pkgs {

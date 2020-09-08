@@ -4,6 +4,9 @@ import (
 	"sort"
 
 	"github.com/hashicorp/go-version"
+
+	"golang.org/x/text/collate"
+	"golang.org/x/text/language"
 )
 
 type pkgSorter struct {
@@ -51,4 +54,74 @@ func SortByVersion(pkgs []*Pkg, desc bool) {
 		}
 	}
 	sortBy(version).sort(pkgs)
+}
+
+func SortByNormName(pkgs []*Pkg, desc bool) {
+	collator := collate.New(language.MustParse("en-US"))
+	name := func(p1, p2 *Pkg) bool {
+		n1 := p1.Metadata.NormName
+		n2 := p2.Metadata.NormName
+		if desc {
+			return collator.CompareString(n1, n2) == 1
+		} else {
+			return collator.CompareString(n1, n2) == -1
+		}
+	}
+	sortBy(name).sort(pkgs)
+}
+
+func SortByName(pkgs []*Pkg, desc bool) {
+	collator := collate.New(language.MustParse("en-US"))
+	name := func(p1, p2 *Pkg) bool {
+		n1 := p1.Metadata.Name
+		n2 := p2.Metadata.Name
+		if desc {
+			return collator.CompareString(n1, n2) == 1
+		} else {
+			return collator.CompareString(n1, n2) == -1
+		}
+	}
+	sortBy(name).sort(pkgs)
+}
+
+type Group struct {
+	Key  interface{}
+	Pkgs []*Pkg
+}
+
+type sortFunc func(pkgs []*Pkg, desc bool)
+type keyFunc func(pkg *Pkg) interface{}
+
+func GroupBy(pkgs []*Pkg, sort sortFunc, key keyFunc) []*Group {
+	groups := make([]*Group, 0)
+	if len(pkgs) == 0 {
+		return groups
+	}
+	sort(pkgs, false)
+	k := key(pkgs[0])
+	first := 0
+	for i, pkg := range pkgs {
+		if k != pkg.Metadata.NormName {
+			group := &Group{k, pkgs[first:i]}
+			groups = append(groups, group)
+			k = key(pkg)
+			first = i
+		}
+	}
+	group := &Group{k, pkgs[first:]}
+	return append(groups, group)
+}
+
+func GroupByNormName(pkgs []*Pkg) []*Group {
+	key := func(pkg *Pkg) interface{} {
+		return pkg.Metadata.NormName
+	}
+	return GroupBy(pkgs, SortByNormName, key)
+}
+
+func GroupByName(pkgs []*Pkg) []*Group {
+	key := func(pkg *Pkg) interface{} {
+		return pkg.Metadata.Name
+	}
+	return GroupBy(pkgs, SortByName, key)
 }
