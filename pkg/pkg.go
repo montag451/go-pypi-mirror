@@ -23,15 +23,6 @@ func newPackage(path string) (*Pkg, error) {
 	return &Pkg{path, filepath.Base(path), meta}, nil
 }
 
-func GroupByNormName(pkgs []*Pkg) map[string][]*Pkg {
-	byNormName := make(map[string][]*Pkg)
-	for _, pkg := range pkgs {
-		normName := pkg.Metadata.NormName
-		byNormName[normName] = append(byNormName[normName], pkg)
-	}
-	return byNormName
-}
-
 func List(dir string, fixNames bool) ([]*Pkg, error) {
 	pkgs := make([]*Pkg, 0)
 	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
@@ -51,15 +42,23 @@ func List(dir string, fixNames bool) ([]*Pkg, error) {
 		return nil, err
 	}
 	if fixNames {
-		for _, pkgs := range GroupByNormName(pkgs) {
+		for _, pkgs := range ListByNormName(pkgs) {
 			FixNames(pkgs)
 		}
 	}
 	return pkgs, nil
 }
 
-// TODO: sort respecting locale
-func ListByNames(dir string) (map[string][]*Pkg, error) {
+func ListByNormName(pkgs []*Pkg) map[string][]*Pkg {
+	byNormName := make(map[string][]*Pkg)
+	for _, pkg := range pkgs {
+		normName := pkg.Metadata.NormName
+		byNormName[normName] = append(byNormName[normName], pkg)
+	}
+	return byNormName
+}
+
+func ListByName(dir string) (map[string][]*Pkg, error) {
 	pkgs, err := List(dir, true)
 	if err != nil {
 		return nil, err
@@ -73,7 +72,7 @@ func ListByNames(dir string) (map[string][]*Pkg, error) {
 }
 
 func ListNames(dir string) ([]string, error) {
-	byName, err := ListByNames(dir)
+	byName, err := ListByName(dir)
 	if err != nil {
 		return nil, err
 	}

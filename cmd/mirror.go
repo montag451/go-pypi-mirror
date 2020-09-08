@@ -73,7 +73,7 @@ func (c *createCommand) Execute() error {
 	if err != nil {
 		return err
 	}
-	pkgsByNormName := pkg.GroupByNormName(pkgs)
+	pkgsByNormName := pkg.ListByNormName(pkgs)
 	rootPkgs := make([]*pkg.Pkg, 0, len(pkgsByNormName))
 	for normName, pkgs := range pkgsByNormName {
 		dir := filepath.Join(mirrorDir, normName)
