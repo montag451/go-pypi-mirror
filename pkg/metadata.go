@@ -1,4 +1,4 @@
-package metadata
+package pkg
 
 import (
 	"archive/tar"
@@ -20,7 +20,7 @@ import (
 )
 
 const (
-	FileExt             = ".metadata.json"
+	metadataExt         = ".metadata.json"
 	archiveMetadataFile = "PKG-INFO"
 )
 
@@ -39,14 +39,14 @@ var (
 	errUnknownExtension      = errors.New("unknown extension")
 )
 
-type getFunc func(string) (*Metadata, error)
+type getMetadataFunc func(string) (*Metadata, error)
 type extractFunc func(string, string) (string, error)
 
-var getters = map[string]getFunc{
-	".tar.bz2": getFromTarBz2,
-	".tar.gz":  getFromTarGz,
-	".whl":     getFromWheel,
-	".zip":     getFromZip,
+var getters = map[string]getMetadataFunc{
+	".tar.bz2": getMetadataFromTarBz2,
+	".tar.gz":  getMetadataFromTarGz,
+	".whl":     getMetadataFromWheel,
+	".zip":     getMetadataFromZip,
 }
 
 type Metadata struct {
@@ -66,7 +66,7 @@ func normalize(name string) string {
 	return strings.ToLower(normRegex.ReplaceAllLiteralString(name, "-"))
 }
 
-func parse(s string) (*Metadata, error) {
+func parseMetadata(s string) (*Metadata, error) {
 	m := nameRegex.FindStringSubmatch(s)
 	if len(m) == 0 {
 		return nil, fmt.Errorf("%w: missing %q field", errInvalidMetadata, "Name")
@@ -92,7 +92,7 @@ func parse(s string) (*Metadata, error) {
 	return meta, nil
 }
 
-func getFromArchive(filePath string, ext string, fn extractFunc, member string) (*Metadata, error) {
+func getMetadataFromArchive(filePath string, ext string, fn extractFunc, member string) (*Metadata, error) {
 	filename := filepath.Base(filePath)
 	if !strings.HasSuffix(filename, ext) {
 		return nil, errInvalidArchiveName
@@ -121,7 +121,7 @@ func getFromArchive(filePath string, ext string, fn extractFunc, member string) 
 		}
 		return meta, nil
 	}
-	return parse(meta)
+	return parseMetadata(meta)
 }
 
 func extractMemberFromZip(path string, member string) (string, error) {
@@ -185,15 +185,15 @@ func extractMemberFromTar(filePath string, member string) (string, error) {
 	return "", err
 }
 
-func getFromTarBz2(path string) (*Metadata, error) {
-	return getFromArchive(path, ".tar.bz2", extractMemberFromTar, "")
+func getMetadataFromTarBz2(path string) (*Metadata, error) {
+	return getMetadataFromArchive(path, ".tar.bz2", extractMemberFromTar, "")
 }
 
-func getFromTarGz(path string) (*Metadata, error) {
-	return getFromArchive(path, ".tar.gz", extractMemberFromTar, "")
+func getMetadataFromTarGz(path string) (*Metadata, error) {
+	return getMetadataFromArchive(path, ".tar.gz", extractMemberFromTar, "")
 }
 
-func getFromWheel(filePath string) (*Metadata, error) {
+func getMetadataFromWheel(filePath string) (*Metadata, error) {
 	whl, err := zip.OpenReader(filePath)
 	if err != nil {
 		return nil, err
@@ -210,7 +210,7 @@ func getFromWheel(filePath string) (*Metadata, error) {
 	if err != nil {
 		return nil, err
 	}
-	meta, err := parse(rawMeta)
+	meta, err := parseMetadata(rawMeta)
 	if err != nil {
 		return nil, err
 	}
@@ -233,12 +233,12 @@ func getFromWheel(filePath string) (*Metadata, error) {
 	return meta, nil
 }
 
-func getFromZip(path string) (*Metadata, error) {
-	return getFromArchive(path, ".zip", extractMemberFromZip, "")
+func getMetadataFromZip(path string) (*Metadata, error) {
+	return getMetadataFromArchive(path, ".zip", extractMemberFromZip, "")
 }
 
-func getFromJSON(path string) (*Metadata, error) {
-	f, err := os.Open(path + FileExt)
+func getMetadataFromJSON(path string) (*Metadata, error) {
+	f, err := os.Open(path + metadataExt)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
 			return nil, nil
@@ -256,12 +256,12 @@ func getFromJSON(path string) (*Metadata, error) {
 	return &meta, nil
 }
 
-func Get(path string) (*Metadata, error) {
-	meta, err := getFromJSON(path)
+func getMetadata(path string) (*Metadata, error) {
+	meta, err := getMetadataFromJSON(path)
 	if err == nil && meta != nil {
 		return meta, nil
 	}
-	var getter getFunc
+	var getter getMetadataFunc
 	for ext, g := range getters {
 		if strings.HasSuffix(path, ext) {
 			getter = g
@@ -286,4 +286,44 @@ func Get(path string) (*Metadata, error) {
 	}
 	meta.Hash = fmt.Sprintf("%x", h.Sum(nil))
 	return meta, nil
+}
+
+func CreateMetadataFiles(dir string, overwrite bool) error {
+	if overwrite {
+		err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+			if !info.IsDir() && strings.HasSuffix(path, metadataExt) {
+				err := os.Remove(path)
+				if err != nil {
+					return err
+				}
+			}
+			return nil
+		})
+		if err != nil {
+			return err
+		}
+	}
+	pkgs, err := List(dir, true)
+	if err != nil {
+		return err
+	}
+	for _, pkg := range pkgs {
+		metadataFile := pkg.Path + metadataExt
+		if _, err := os.Stat(metadataFile); !errors.Is(err, os.ErrNotExist) {
+			continue
+		}
+		f, err := os.Create(metadataFile)
+		if err != nil {
+			return err
+		}
+		err = pkg.Metadata.MarshalJSON(f)
+		if err != nil {
+			return err
+		}
+		f.Close()
+	}
+	return nil
 }

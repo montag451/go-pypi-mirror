@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+
+	"github.com/montag451/go-pypi-mirror/pkg"
 )
 
 type requirementsValue []string
@@ -74,7 +76,7 @@ func (c *downloadCommand) Execute() error {
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("failure while executing %q: %w", cmd, err)
 	}
-	return createMetadataFiles(c.dest, false)
+	return pkg.CreateMetadataFiles(c.dest, false)
 }
 
 func init() {
