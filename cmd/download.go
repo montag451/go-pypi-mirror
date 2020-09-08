@@ -83,7 +83,7 @@ func init() {
 	cmd := downloadCommand{
 		requirements: make([]string, 0),
 	}
-	flags := flag.NewFlagSet("download", flag.ContinueOnError)
+	flags := flag.NewFlagSet("download", flag.ExitOnError)
 	flags.Var(&cmd.requirements, "requirements", "requirements file")
 	flags.StringVar(&cmd.dest, "download-dir", ".", "download directory")
 	flags.StringVar(&cmd.indexUrl, "index-url", "", "index URL")

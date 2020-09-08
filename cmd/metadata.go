@@ -22,7 +22,7 @@ func (c *writeMetadataCommand) Execute() error {
 
 func init() {
 	cmd := writeMetadataCommand{}
-	flags := flag.NewFlagSet("write-metadata", flag.ContinueOnError)
+	flags := flag.NewFlagSet("write-metadata", flag.ExitOnError)
 	flags.StringVar(&cmd.downloadDir, "download-dir", "", "download dir")
 	flags.BoolVar(&cmd.overwrite, "overwrite", false, "overwrite metadata files")
 	cmd.flags = flags

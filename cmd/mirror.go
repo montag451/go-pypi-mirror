@@ -117,7 +117,7 @@ func (c *createCommand) Execute() error {
 
 func init() {
 	cmd := createCommand{}
-	flags := flag.NewFlagSet("create", flag.ContinueOnError)
+	flags := flag.NewFlagSet("create", flag.ExitOnError)
 	flags.StringVar(&cmd.downloadDir, "download-dir", ".", "download dir")
 	flags.StringVar(&cmd.mirrorDir, "mirror-dir", ".", "mirror dir")
 	cmd.flags = flags
