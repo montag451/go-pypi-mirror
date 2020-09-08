@@ -41,16 +41,8 @@ func (c *downloadCommand) Execute() error {
 	if len(c.pkgs) == 0 && len(c.requirements) == 0 {
 		return nil
 	}
-	pip := c.pip
-	if pip == "" {
-		pip = "pip"
-	}
-	dest := c.dest
-	if dest == "" {
-		dest = "."
-	}
 	args := make([]string, 0, 3+len(c.pkgs)+2*len(c.requirements))
-	args = append(args, "download", "-d", dest)
+	args = append(args, "download", "-d", c.dest)
 	if c.indexUrl != "" {
 		args = append(args, "--index-url", c.indexUrl)
 	}
@@ -76,7 +68,7 @@ func (c *downloadCommand) Execute() error {
 		args = append(args, "-r", r)
 	}
 	args = append(args, c.pkgs...)
-	cmd := exec.Command(pip, args...)
+	cmd := exec.Command(c.pip, args...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	if err := cmd.Run(); err != nil {
@@ -91,14 +83,14 @@ func init() {
 	}
 	flags := flag.NewFlagSet("download", flag.ContinueOnError)
 	flags.Var(&cmd.requirements, "requirements", "requirements file")
-	flags.StringVar(&cmd.dest, "download-dir", "", "download directory")
-	flags.StringVar(&cmd.indexUrl, "index-url", "", "index ULR")
+	flags.StringVar(&cmd.dest, "download-dir", ".", "download directory")
+	flags.StringVar(&cmd.indexUrl, "index-url", "", "index URL")
 	flags.BoolVar(&cmd.allowBinary, "allow-binary", false, "allow binary")
 	flags.StringVar(&cmd.platform, "platform", "", "platform")
 	flags.StringVar(&cmd.pythonVersion, "python-version", "", "Python version")
 	flags.StringVar(&cmd.implementation, "implementation", "", "implementation")
 	flags.StringVar(&cmd.abi, "abi", "", "Python ABI")
-	flags.StringVar(&cmd.pip, "pip", "", "pip executable")
+	flags.StringVar(&cmd.pip, "pip", "pip3", "pip executable")
 	cmd.flags = flags
 	registerCommand(&cmd)
 }
