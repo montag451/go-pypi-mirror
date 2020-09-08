@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"errors"
+	"flag"
 	"os"
 	"path/filepath"
 	"strings"
@@ -48,4 +49,27 @@ func createMetadataFiles(dir string, overwrite bool) error {
 		f.Close()
 	}
 	return nil
+}
+
+type writeMetadataCommand struct {
+	flags       *flag.FlagSet
+	downloadDir string
+	overwrite   bool
+}
+
+func (c *writeMetadataCommand) FlagSet() *flag.FlagSet {
+	return c.flags
+}
+
+func (c *writeMetadataCommand) Execute() error {
+	return createMetadataFiles(c.downloadDir, c.overwrite)
+}
+
+func init() {
+	cmd := writeMetadataCommand{}
+	flags := flag.NewFlagSet("write-metadata", flag.ContinueOnError)
+	flags.StringVar(&cmd.downloadDir, "download-dir", "", "download dir")
+	flags.BoolVar(&cmd.overwrite, "overwrite", false, "overwrite metadata files")
+	cmd.flags = flags
+	registerCommand(&cmd)
 }
