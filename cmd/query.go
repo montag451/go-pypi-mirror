@@ -105,7 +105,7 @@ func init() {
 	flags.StringVar(&cmd.url, "url", "https://pypi.org/pypi/{{ . }}/json", "index URL template")
 	flags.StringVar(&cmd.format, "format", "oneline", "output format (oneline or json)")
 	flags.Usage = func() {
-		fmt.Fprintf(flags.Output(), "Usage: %s [options] PKG\n", flags.Name())
+		fmt.Fprintf(flags.Output(), "Usage: %s [options] pkg\n", flags.Name())
 		fmt.Fprintln(flags.Output(), "Options:")
 		flags.PrintDefaults()
 	}
