@@ -27,7 +27,7 @@ func (c *listCommand) Execute() error {
 	}
 	groups := pkg.GroupByName(pkgs)
 	for _, group := range groups {
-		name := group.Key
+		name := group.Key.(string)
 		if c.name != "" && name != c.name {
 			continue
 		}
