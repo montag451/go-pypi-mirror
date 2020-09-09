@@ -72,7 +72,7 @@ func (c *queryCommand) Execute() error {
 	for rawVersion, _ := range releases {
 		version, err := version.NewVersion(rawVersion)
 		if err != nil {
-			fmt.Errorf("unable to parse version %q: %w", rawVersion, err)
+			return fmt.Errorf("unable to parse version %q: %w", rawVersion, err)
 		}
 		if c.constraints == "" || constraints.Check(version) {
 			versions = append(versions, version)
