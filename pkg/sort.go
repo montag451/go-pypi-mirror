@@ -98,17 +98,18 @@ func GroupBy(pkgs []*Pkg, sort sortFunc, key keyFunc) []*Group {
 		return groups
 	}
 	sort(pkgs, false)
-	k := key(pkgs[0])
+	currentKey := key(pkgs[0])
 	first := 0
 	for i, pkg := range pkgs {
-		if k != pkg.Metadata.NormName {
-			group := &Group{k, pkgs[first:i]}
+		k := key(pkg)
+		if currentKey != k {
+			group := &Group{currentKey, pkgs[first:i]}
 			groups = append(groups, group)
-			k = key(pkg)
+			currentKey = k
 			first = i
 		}
 	}
-	group := &Group{k, pkgs[first:]}
+	group := &Group{currentKey, pkgs[first:]}
 	return append(groups, group)
 }
 
