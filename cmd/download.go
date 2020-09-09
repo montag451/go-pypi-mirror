@@ -93,6 +93,11 @@ func init() {
 	flags.StringVar(&cmd.implementation, "implementation", "", "implementation")
 	flags.StringVar(&cmd.abi, "abi", "", "Python ABI")
 	flags.StringVar(&cmd.pip, "pip", "pip3", "pip executable")
+	flags.Usage = func() {
+		fmt.Fprintf(flags.Output(), "Usage: %s [options] [pkgs]\n", flags.Name())
+		fmt.Fprintln(flags.Output(), "Options:")
+		flags.PrintDefaults()
+	}
 	cmd.flags = flags
 	registerCommand(&cmd)
 }
