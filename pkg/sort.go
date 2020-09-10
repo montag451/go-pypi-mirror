@@ -9,35 +9,9 @@ import (
 	"golang.org/x/text/language"
 )
 
-type pkgSorter struct {
-	pkgs []*Pkg
-	by   func(p1, p2 *Pkg) bool
-}
-
-func (s *pkgSorter) Len() int {
-	return len(s.pkgs)
-}
-
-func (s *pkgSorter) Less(i, j int) bool {
-	return s.by(s.pkgs[i], s.pkgs[j])
-}
-
-func (s *pkgSorter) Swap(i, j int) {
-	s.pkgs[i], s.pkgs[j] = s.pkgs[j], s.pkgs[i]
-}
-
-type sortBy func(p1, p2 *Pkg) bool
-
-func (by sortBy) sort(pkgs []*Pkg) {
-	sorter := &pkgSorter{
-		pkgs: pkgs,
-		by:   by,
-	}
-	sort.Sort(sorter)
-}
-
 func SortByVersion(pkgs []*Pkg, desc bool) {
-	version := func(p1, p2 *Pkg) bool {
+	version := func(i, j int) bool {
+		p1, p2 := pkgs[i], pkgs[j]
 		v1, err1 := version.NewVersion(p1.Metadata.Version)
 		v2, err2 := version.NewVersion(p2.Metadata.Version)
 		if err1 != nil || err2 != nil {
@@ -53,12 +27,13 @@ func SortByVersion(pkgs []*Pkg, desc bool) {
 			return v1.Compare(v2) == -1
 		}
 	}
-	sortBy(version).sort(pkgs)
+	sort.Slice(pkgs, version)
 }
 
 func SortByNormName(pkgs []*Pkg, desc bool) {
 	collator := collate.New(language.MustParse("en-US"))
-	name := func(p1, p2 *Pkg) bool {
+	normName := func(i, j int) bool {
+		p1, p2 := pkgs[i], pkgs[j]
 		n1 := p1.Metadata.NormName
 		n2 := p2.Metadata.NormName
 		if desc {
@@ -67,12 +42,13 @@ func SortByNormName(pkgs []*Pkg, desc bool) {
 			return collator.CompareString(n1, n2) == -1
 		}
 	}
-	sortBy(name).sort(pkgs)
+	sort.Slice(pkgs, normName)
 }
 
 func SortByName(pkgs []*Pkg, desc bool) {
 	collator := collate.New(language.MustParse("en-US"))
-	name := func(p1, p2 *Pkg) bool {
+	name := func(i, j int) bool {
+		p1, p2 := pkgs[i], pkgs[j]
 		n1 := p1.Metadata.Name
 		n2 := p2.Metadata.Name
 		if desc {
@@ -81,7 +57,7 @@ func SortByName(pkgs []*Pkg, desc bool) {
 			return collator.CompareString(n1, n2) == -1
 		}
 	}
-	sortBy(name).sort(pkgs)
+	sort.Slice(pkgs, name)
 }
 
 type Group struct {
