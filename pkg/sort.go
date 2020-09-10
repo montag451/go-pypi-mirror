@@ -89,6 +89,13 @@ func GroupBy(pkgs []*Pkg, sort sortFunc, key keyFunc) []*Group {
 	return append(groups, group)
 }
 
+func GroupByVersion(pkgs []*Pkg) []*Group {
+	key := func(pkg *Pkg) interface{} {
+		return pkg.Metadata.Version
+	}
+	return GroupBy(pkgs, SortByVersion, key)
+}
+
 func GroupByNormName(pkgs []*Pkg) []*Group {
 	key := func(pkg *Pkg) interface{} {
 		return pkg.Metadata.NormName
