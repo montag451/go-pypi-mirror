@@ -5,8 +5,6 @@ import (
 	"fmt"
 
 	"github.com/montag451/go-pypi-mirror/pkg"
-
-	orderedmap "github.com/wk8/go-ordered-map"
 )
 
 type listCommand struct {
@@ -35,14 +33,9 @@ func (c *listCommand) Execute() error {
 		if c.name == "" && c.nameOnly {
 			continue
 		}
-		pkgs := group.Pkgs
-		pkg.SortByVersion(pkgs, true)
-		versions := orderedmap.New()
-		for _, pkg := range pkgs {
-			versions.Set(pkg.Metadata.Version, true)
-		}
-		for pair := versions.Oldest(); pair != nil; pair = pair.Next() {
-			fmt.Printf("  %v\n", pair.Key)
+		groups := pkg.GroupByVersion(group.Pkgs)
+		for i := len(groups) - 1; i >= 0; i-- {
+			fmt.Printf("  %v\n", groups[i].Key)
 		}
 	}
 	return nil
