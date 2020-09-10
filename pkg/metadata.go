@@ -221,7 +221,7 @@ func getMetadataFromWheel(filePath string) (*Metadata, error) {
 			return nil, err
 		}
 		if len(u.Path) > 0 && strings.HasPrefix(u.Path, "/") {
-			p := strings.TrimPrefix(u.Path, "/")
+			p := strings.TrimSuffix(u.Path, "/")
 			if len(p) > 0 {
 				idx := strings.LastIndex(p, "/")
 				if idx != -1 && strings.HasPrefix(whlName, p[:idx]) {
