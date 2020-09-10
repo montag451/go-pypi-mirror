@@ -36,7 +36,7 @@ func (c *queryCommand) Execute() error {
 	if c.url == "" {
 		return fmt.Errorf("empty URL")
 	}
-	t, err := template.New("url").Parse(c.url)
+	t, err := template.New("").Parse(c.url)
 	if err != nil {
 		return fmt.Errorf("invalid URL template %q: %w", c.url, err)
 	}

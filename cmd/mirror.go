@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	rootHTMLTemplate = template.Must(template.New("root").Parse(`
+	rootHTMLTemplate = template.Must(template.New("").Parse(`
 <!DOCTYPE html>
 <html>
   <head>
@@ -25,7 +25,7 @@ var (
   </body>
 </html>
 `))
-	packageHTMLTemplate = template.Must(template.New("pkg").Parse(`
+	packageHTMLTemplate = template.Must(template.New("").Parse(`
 {{- $firstPkg := index . 0 }}
 <!DOCTYPE html>
 <html>
@@ -43,11 +43,11 @@ var (
 )
 
 func generateRootHTML(w io.Writer, pkgs []*pkg.Pkg) error {
-	return rootHTMLTemplate.ExecuteTemplate(w, "root", pkgs)
+	return rootHTMLTemplate.Execute(w, pkgs)
 }
 
 func generatePackageHTML(w io.Writer, pkgs []*pkg.Pkg) error {
-	return packageHTMLTemplate.ExecuteTemplate(w, "pkg", pkgs)
+	return packageHTMLTemplate.Execute(w, pkgs)
 }
 
 type createCommand struct {
