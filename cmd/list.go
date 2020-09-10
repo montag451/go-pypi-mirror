@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"flag"
 	"fmt"
 
@@ -18,7 +19,7 @@ func (c *listCommand) FlagSet() *flag.FlagSet {
 	return c.flags
 }
 
-func (c *listCommand) Execute() error {
+func (c *listCommand) Execute(context.Context) error {
 	pkgs, err := pkg.List(c.downloadDir, true)
 	if err != nil {
 		return err

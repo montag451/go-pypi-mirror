@@ -1,14 +1,16 @@
 package cmd
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"os"
+	"os/signal"
 )
 
 type command interface {
 	FlagSet() *flag.FlagSet
-	Execute() error
+	Execute(ctx context.Context) error
 }
 
 var commands = map[string]command{}
@@ -36,8 +38,29 @@ func Execute() error {
 	}
 	flags := cmd.FlagSet()
 	flags.Parse(os.Args[2:])
-	if err := cmd.Execute(); err != nil {
-		return fmt.Errorf("failed to execute command %q: %w", name, err)
+	cancelCtx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	execChan := make(chan error)
+	go func() {
+		if err := cmd.Execute(cancelCtx); err != nil {
+			execChan <- fmt.Errorf("failed to execute command %q: %w", name, err)
+		} else {
+			execChan <- nil
+		}
+		close(execChan)
+
+	}()
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, os.Interrupt)
+	select {
+	case err := <-execChan:
+		if err != nil {
+			fmt.Println(err)
+		}
+	case <-sigChan:
+		cancel()
+		err := <-execChan
+		fmt.Println(err)
 	}
 	return nil
 }

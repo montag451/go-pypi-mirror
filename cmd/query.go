@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"flag"
@@ -26,7 +27,7 @@ func (c *queryCommand) FlagSet() *flag.FlagSet {
 	return c.flags
 }
 
-func (c *queryCommand) Execute() error {
+func (c *queryCommand) Execute(ctx context.Context) error {
 	pkgs := c.flags.Args()
 	if nbPkgs := len(pkgs); nbPkgs == 0 {
 		return errors.New("no package specified")
@@ -52,9 +53,13 @@ func (c *queryCommand) Execute() error {
 	if err := t.Execute(&url, pkgs[0]); err != nil {
 		return fmt.Errorf("failed to execute URL template %q: %w", c.url, err)
 	}
-	resp, err := http.Get(url.String())
+	req, err := http.NewRequestWithContext(ctx, "GET", url.String(), nil)
 	if err != nil {
 		return fmt.Errorf("failed to get %q: %w", url.String(), err)
+	}
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != 200 {

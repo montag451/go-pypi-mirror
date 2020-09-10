@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"errors"
 	"flag"
 	"html/template"
@@ -60,7 +61,7 @@ func (c *createCommand) FlagSet() *flag.FlagSet {
 	return c.flags
 }
 
-func (c *createCommand) Execute() error {
+func (c *createCommand) Execute(context.Context) error {
 	downloadDir, err := filepath.Abs(c.downloadDir)
 	if err != nil {
 		return err

@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"os"
@@ -38,7 +39,7 @@ func (c *downloadCommand) FlagSet() *flag.FlagSet {
 	return c.flags
 }
 
-func (c *downloadCommand) Execute() error {
+func (c *downloadCommand) Execute(context.Context) error {
 	c.pkgs = c.FlagSet().Args()
 	if len(c.pkgs) == 0 && len(c.requirements) == 0 {
 		return nil

@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"flag"
 
 	"github.com/montag451/go-pypi-mirror/pkg"
@@ -16,7 +17,7 @@ func (c *writeMetadataCommand) FlagSet() *flag.FlagSet {
 	return c.flags
 }
 
-func (c *writeMetadataCommand) Execute() error {
+func (c *writeMetadataCommand) Execute(context.Context) error {
 	return pkg.CreateMetadataFiles(c.downloadDir, c.overwrite)
 }
 
