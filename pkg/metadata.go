@@ -28,7 +28,7 @@ var (
 	normRegex     = regexp.MustCompile("[-_.]+")
 	nameRegex     = regexp.MustCompile("(?m:^Name: (.*)$)")
 	versionRegex  = regexp.MustCompile("(?m:^Version: (.*)$)")
-	homepageRegex = regexp.MustCompile("(?m:^Home-[pP]age: (.*)$)")
+	homepageRegex = regexp.MustCompile("(?m:^(?:Home-[pP]age:|Project-URL: [Hh]ome-?[pP]age,) (.*)$)")
 )
 
 var (
