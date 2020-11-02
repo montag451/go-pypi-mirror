@@ -26,7 +26,7 @@ func registerCommand(cmd command) {
 func Execute() error {
 	if len(os.Args) <= 1 {
 		fmt.Println("available commands:")
-		for cmd, _ := range commands {
+		for cmd := range commands {
 			fmt.Println(cmd)
 		}
 		os.Exit(1)

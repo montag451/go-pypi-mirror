@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"fmt"
 	"os"
@@ -23,7 +24,6 @@ func (r *requirementsValue) Set(s string) error {
 
 type downloadCommand struct {
 	flags          *flag.FlagSet
-	pkgs           []string
 	requirements   requirementsValue
 	dest           string
 	indexUrl       string
@@ -40,11 +40,11 @@ func (c *downloadCommand) FlagSet() *flag.FlagSet {
 }
 
 func (c *downloadCommand) Execute(context.Context) error {
-	c.pkgs = c.FlagSet().Args()
-	if len(c.pkgs) == 0 && len(c.requirements) == 0 {
-		return nil
+	pkgs := c.FlagSet().Args()
+	if len(pkgs) == 0 && len(c.requirements) == 0 {
+		return errors.New("at least one requirements file or package must be specified")
 	}
-	args := make([]string, 0, 3+len(c.pkgs)+2*len(c.requirements))
+	args := make([]string, 0, 3+len(pkgs)+2*len(c.requirements))
 	args = append(args, "download", "-d", c.dest)
 	if c.indexUrl != "" {
 		args = append(args, "--index-url", c.indexUrl)
@@ -70,7 +70,7 @@ func (c *downloadCommand) Execute(context.Context) error {
 	for _, r := range c.requirements {
 		args = append(args, "-r", r)
 	}
-	args = append(args, c.pkgs...)
+	args = append(args, pkgs...)
 	cmd := exec.Command(c.pip, args...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
