@@ -78,10 +78,10 @@ func parseMetadata(s string) (*Metadata, error) {
 	}
 	version := strings.TrimSpace(m[1])
 	m = homepageRegex.FindStringSubmatch(s)
-	if len(m) == 0 {
-		return nil, fmt.Errorf("%w: missing %q field", errInvalidMetadata, "Home-page")
+	var homepage string
+	if len(m) != 0 {
+		homepage = strings.TrimSpace(m[1])
 	}
-	homepage := strings.TrimSpace(m[1])
 	meta := &Metadata{
 		Name:     name,
 		NormName: normalize(name),
