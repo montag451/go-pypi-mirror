@@ -49,5 +49,5 @@ func init() {
 	flags.BoolVar(&cmd.nameOnly, "name-only", false, "list only the names of the packages")
 	flags.StringVar(&cmd.name, "name", "", "list only the versions of `name`")
 	cmd.flags = flags
-	registerCommand(&cmd)
+	RegisterCommand(&cmd)
 }

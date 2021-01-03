@@ -27,5 +27,5 @@ func init() {
 	flags.StringVar(&cmd.downloadDir, "download-dir", "", "download dir")
 	flags.BoolVar(&cmd.overwrite, "overwrite", false, "overwrite metadata files")
 	cmd.flags = flags
-	registerCommand(&cmd)
+	RegisterCommand(&cmd)
 }

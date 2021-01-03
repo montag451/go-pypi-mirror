@@ -100,5 +100,5 @@ func init() {
 		flags.PrintDefaults()
 	}
 	cmd.flags = flags
-	registerCommand(&cmd)
+	RegisterCommand(&cmd)
 }

@@ -124,5 +124,5 @@ func init() {
 	flags.StringVar(&cmd.downloadDir, "download-dir", ".", "download dir")
 	flags.StringVar(&cmd.mirrorDir, "mirror-dir", ".", "mirror dir")
 	cmd.flags = flags
-	registerCommand(&cmd)
+	RegisterCommand(&cmd)
 }

@@ -2,20 +2,22 @@ package cmd
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"fmt"
-	"os"
-	"os/signal"
+	"sort"
 )
 
-type command interface {
+type Command interface {
 	FlagSet() *flag.FlagSet
 	Execute(ctx context.Context) error
 }
 
-var commands = map[string]command{}
+var ErrCommandNotFound = errors.New("command not found")
 
-func registerCommand(cmd command) {
+var commands = map[string]Command{}
+
+func RegisterCommand(cmd Command) {
 	name := cmd.FlagSet().Name()
 	if _, ok := commands[name]; ok {
 		panic(fmt.Sprintf("command %q already registered", name))
@@ -23,44 +25,20 @@ func registerCommand(cmd command) {
 	commands[name] = cmd
 }
 
-func Execute() error {
-	if len(os.Args) <= 1 {
-		fmt.Println("available commands:")
-		for cmd := range commands {
-			fmt.Println(cmd)
-		}
-		os.Exit(1)
+func Names() []string {
+	names := make([]string, 0, len(commands))
+	for name := range commands {
+		names = append(names, name)
 	}
-	name := os.Args[1]
-	cmd, ok := commands[name]
-	if !ok {
-		return fmt.Errorf("unknown command %q", name)
-	}
-	flags := cmd.FlagSet()
-	flags.Parse(os.Args[2:])
-	cancelCtx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	execChan := make(chan error)
-	go func() {
-		if err := cmd.Execute(cancelCtx); err != nil {
-			execChan <- fmt.Errorf("failed to execute command %q: %w", name, err)
-		} else {
-			execChan <- nil
-		}
-		close(execChan)
+	sort.Strings(names)
+	return names
+}
 
-	}()
-	sigChan := make(chan os.Signal, 1)
-	signal.Notify(sigChan, os.Interrupt)
-	select {
-	case err := <-execChan:
-		if err != nil {
-			fmt.Println(err)
-		}
-	case <-sigChan:
-		cancel()
-		err := <-execChan
-		fmt.Println(err)
+func Execute(ctx context.Context, cmdName string, args []string) error {
+	cmd, ok := commands[cmdName]
+	if !ok {
+		return ErrCommandNotFound
 	}
-	return nil
+	cmd.FlagSet().Parse(args)
+	return cmd.Execute(ctx)
 }
