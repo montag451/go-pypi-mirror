@@ -98,6 +98,8 @@ func (c *queryCommand) Execute(ctx context.Context) error {
 			reversedVersions = append(reversedVersions, versions[i].Original())
 		}
 		json.NewEncoder(os.Stdout).Encode(reversedVersions)
+	default:
+		return fmt.Errorf("unknown output format %q", c.format)
 	}
 	return nil
 }
