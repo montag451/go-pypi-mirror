@@ -22,7 +22,7 @@ var (
   </head>
   <body>
     {{- range . }}
-    <a href="{{ .Metadata.NormName }}">{{ .Metadata.Name }}</a>
+    <a href="{{ .Metadata.NormName }}/index.html">{{ .Metadata.Name }}</a>
     {{- end }}
   </body>
 </html>
