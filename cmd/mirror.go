@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"flag"
+	"fmt"
 	"html/template"
 	"io"
 	"os"
@@ -55,6 +56,7 @@ type createCommand struct {
 	flags       *flag.FlagSet
 	downloadDir string
 	mirrorDir   string
+	copy        bool
 }
 
 func (c *createCommand) FlagSet() *flag.FlagSet {
@@ -85,15 +87,40 @@ func (c *createCommand) Execute(context.Context) error {
 			return err
 		}
 		pkg.FixNames(pkgs)
+		copyFile := func(destPath, srcPath string) (err error) {
+			src, err := os.Open(srcPath)
+			if err != nil {
+				return
+			}
+			defer src.Close()
+			dest, err := os.Create(destPath)
+			if err != nil {
+				return
+			}
+			defer func() {
+				cerr := dest.Close()
+				if cerr != nil {
+					err = cerr
+				}
+			}()
+			_, err = io.Copy(dest, src)
+			return
+		}
 		for _, pkg := range pkgs {
 			dest := filepath.Join(dir, pkg.Filename)
-			link, err := filepath.Rel(dir, pkg.Path)
-			if err != nil {
-				return err
-			}
-			err = os.Symlink(link, dest)
-			if err != nil && !errors.Is(err, os.ErrExist) {
-				return err
+			if c.copy {
+				if err := copyFile(dest, pkg.Path); err != nil {
+					return fmt.Errorf("failed to copy %s to %s: %w", pkg.Path, dest, err)
+				}
+			} else {
+				link, err := filepath.Rel(dir, pkg.Path)
+				if err != nil {
+					return err
+				}
+				err = os.Symlink(link, dest)
+				if err != nil && !errors.Is(err, os.ErrExist) {
+					return err
+				}
 			}
 		}
 		f, err := os.Create(filepath.Join(dir, "index.html"))
@@ -123,6 +150,7 @@ func init() {
 	flags := flag.NewFlagSet("create", flag.ExitOnError)
 	flags.StringVar(&cmd.downloadDir, "download-dir", ".", "download dir")
 	flags.StringVar(&cmd.mirrorDir, "mirror-dir", ".", "mirror dir")
+	flags.BoolVar(&cmd.copy, "copy", false, "copy instead of symlinking packages")
 	cmd.flags = flags
 	RegisterCommand(&cmd)
 }
