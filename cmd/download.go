@@ -27,6 +27,7 @@ type downloadCommand struct {
 	requirements   requirementsValue
 	dest           string
 	indexUrl       string
+	proxy          string
 	allowBinary    bool
 	platform       string
 	pythonVersion  string
@@ -48,6 +49,9 @@ func (c *downloadCommand) Execute(context.Context) error {
 	args = append(args, "download", "-d", c.dest)
 	if c.indexUrl != "" {
 		args = append(args, "--index-url", c.indexUrl)
+	}
+	if c.proxy != "" {
+		args = append(args, "--proxy", c.proxy)
 	}
 	if !c.allowBinary {
 		args = append(args, "--no-binary", ":all:")
@@ -88,6 +92,7 @@ func init() {
 	flags.Var(&cmd.requirements, "requirements", "requirements file")
 	flags.StringVar(&cmd.dest, "download-dir", ".", "download directory")
 	flags.StringVar(&cmd.indexUrl, "index-url", "", "index URL")
+	flags.StringVar(&cmd.proxy, "proxy", "", "proxy address in the form [user:passwd@]proxy.server:port")
 	flags.BoolVar(&cmd.allowBinary, "allow-binary", false, "allow binary")
 	flags.StringVar(&cmd.platform, "platform", "", "platform")
 	flags.StringVar(&cmd.pythonVersion, "python-version", "", "Python version")
