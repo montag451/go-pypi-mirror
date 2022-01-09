@@ -19,11 +19,11 @@ type downloadCommand struct {
 	indexUrl         string
 	proxy            string
 	allowBinary      bool
-	platform         string
+	platform         flagutil.StringSlice
 	pythonVersion    string
 	implementation   string
 	noBuildIsolation bool
-	abi              string
+	abi              flagutil.StringSlice
 	pip              string
 }
 
@@ -47,11 +47,11 @@ func (c *downloadCommand) Execute(context.Context) error {
 	if !c.allowBinary {
 		args = append(args, "--no-binary", ":all:")
 	}
-	if c.platform != "" || c.pythonVersion != "" || c.implementation != "" || c.abi != "" {
+	if len(c.platform) > 0 || c.pythonVersion != "" || c.implementation != "" || len(c.abi) > 0 {
 		args = append(args, "--only-binary", ":all:")
 	}
-	if c.platform != "" {
-		args = append(args, "--platform", c.platform)
+	for _, p := range c.platform {
+		args = append(args, "--platform", p)
 	}
 	if c.pythonVersion != "" {
 		args = append(args, "--python-version", c.pythonVersion)
@@ -62,8 +62,8 @@ func (c *downloadCommand) Execute(context.Context) error {
 	if c.noBuildIsolation {
 		args = append(args, "--no-build-isolation")
 	}
-	if c.abi != "" {
-		args = append(args, "--abi", c.abi)
+	for _, a := range c.abi {
+		args = append(args, "--abi", a)
 	}
 	for _, r := range c.requirements {
 		args = append(args, "-r", r)
@@ -88,10 +88,10 @@ func init() {
 	flags.StringVar(&cmd.indexUrl, "index-url", "", "index URL")
 	flags.StringVar(&cmd.proxy, "proxy", "", "proxy address in the form [user:passwd@]proxy.server:port")
 	flags.BoolVar(&cmd.allowBinary, "allow-binary", false, "allow binary")
-	flags.StringVar(&cmd.platform, "platform", "", "platform")
+	flags.Var(&cmd.platform, "platform", "platform")
 	flags.StringVar(&cmd.pythonVersion, "python-version", "", "Python version")
 	flags.StringVar(&cmd.implementation, "implementation", "", "implementation")
-	flags.StringVar(&cmd.abi, "abi", "", "Python ABI")
+	flags.Var(&cmd.abi, "abi", "Python ABI")
 	flags.BoolVar(&cmd.noBuildIsolation, "no-build-isolation", false, "disable isolation when building")
 	flags.StringVar(&cmd.pip, "pip", "pip3", "pip executable")
 	flags.Usage = func() {
