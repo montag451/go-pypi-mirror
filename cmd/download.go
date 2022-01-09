@@ -8,23 +8,13 @@ import (
 	"os"
 	"os/exec"
 
+	"github.com/montag451/go-pypi-mirror/internal/flagutil"
 	"github.com/montag451/go-pypi-mirror/pkg"
 )
 
-type requirementsValue []string
-
-func (r *requirementsValue) String() string {
-	return fmt.Sprint(*r)
-}
-
-func (r *requirementsValue) Set(s string) error {
-	*r = append(*r, s)
-	return nil
-}
-
 type downloadCommand struct {
 	flags            *flag.FlagSet
-	requirements     requirementsValue
+	requirements     flagutil.StringSlice
 	dest             string
 	indexUrl         string
 	proxy            string
