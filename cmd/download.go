@@ -23,17 +23,18 @@ func (r *requirementsValue) Set(s string) error {
 }
 
 type downloadCommand struct {
-	flags          *flag.FlagSet
-	requirements   requirementsValue
-	dest           string
-	indexUrl       string
-	proxy          string
-	allowBinary    bool
-	platform       string
-	pythonVersion  string
-	implementation string
-	abi            string
-	pip            string
+	flags            *flag.FlagSet
+	requirements     requirementsValue
+	dest             string
+	indexUrl         string
+	proxy            string
+	allowBinary      bool
+	platform         string
+	pythonVersion    string
+	implementation   string
+	noBuildIsolation bool
+	abi              string
+	pip              string
 }
 
 func (c *downloadCommand) FlagSet() *flag.FlagSet {
@@ -68,6 +69,9 @@ func (c *downloadCommand) Execute(context.Context) error {
 	if c.implementation != "" {
 		args = append(args, "--implementation", c.implementation)
 	}
+	if c.noBuildIsolation {
+		args = append(args, "--no-build-isolation")
+	}
 	if c.abi != "" {
 		args = append(args, "--abi", c.abi)
 	}
@@ -98,6 +102,7 @@ func init() {
 	flags.StringVar(&cmd.pythonVersion, "python-version", "", "Python version")
 	flags.StringVar(&cmd.implementation, "implementation", "", "implementation")
 	flags.StringVar(&cmd.abi, "abi", "", "Python ABI")
+	flags.BoolVar(&cmd.noBuildIsolation, "no-build-isolation", false, "disable isolation when building")
 	flags.StringVar(&cmd.pip, "pip", "pip3", "pip executable")
 	flags.Usage = func() {
 		fmt.Fprintf(flags.Output(), "Usage: %s [options] [pkgs]\n", flags.Name())
