@@ -205,9 +205,22 @@ func getMetadataFromWheel(filePath string) (*Metadata, error) {
 		return nil, errInvalidArchiveName
 	}
 	prefix := strings.Join(components[:2], "-")
-	metadataFile := path.Join(prefix+".dist-info", "METADATA")
-	rawMeta, err := extractMemberFromZip(filePath, metadataFile)
+	prefixes := []string{
+		prefix,
+		strings.ToLower(prefix),
+	}
+	var metadataFile, rawMeta string
+	for _, prefix := range prefixes {
+		metadataFile = path.Join(prefix+".dist-info", "METADATA")
+		rawMeta, err = extractMemberFromZip(filePath, metadataFile)
+		if err != nil && !errors.Is(err, errArchiveMemberNotFound) {
+			return nil, err
+		}
+	}
 	if err != nil {
+		if errors.Is(err, errArchiveMemberNotFound) {
+			err = fmt.Errorf("metadata file not found")
+		}
 		return nil, err
 	}
 	meta, err := parseMetadata(rawMeta)
