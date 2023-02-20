@@ -219,7 +219,7 @@ func getMetadataFromWheel(filePath string) (*Metadata, error) {
 	}
 	if err != nil {
 		if errors.Is(err, errArchiveMemberNotFound) {
-			err = fmt.Errorf("metadata file not found")
+			err = errors.New("metadata file not found")
 		}
 		return nil, err
 	}
