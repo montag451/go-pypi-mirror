@@ -16,6 +16,7 @@ type listCommand struct {
 	nameOnly    bool
 	name        string
 	json        bool
+	useNormName bool
 }
 
 func (c *listCommand) FlagSet() *flag.FlagSet {
@@ -31,6 +32,9 @@ func (c *listCommand) Execute(context.Context) error {
 	pkgsByName := make([]map[string]interface{}, len(groups))
 	for i, group := range groups {
 		name := group.Key.(string)
+		if c.useNormName {
+			name = group.Pkgs[0].Metadata.NormName
+		}
 		if c.name != "" && name != c.name {
 			continue
 		}
@@ -66,6 +70,7 @@ func init() {
 	flags.BoolVar(&cmd.nameOnly, "name-only", false, "list only the names of the packages")
 	flags.StringVar(&cmd.name, "name", "", "list only the versions of `name`")
 	flags.BoolVar(&cmd.json, "json", false, "JSON output")
+	flags.BoolVar(&cmd.useNormName, "use-norm-name", false, "use the normalized name instead of the regular name")
 	cmd.flags = flags
 	RegisterCommand(&cmd)
 }
