@@ -29,8 +29,8 @@ func (c *listCommand) Execute(context.Context) error {
 		return err
 	}
 	groups := pkg.GroupByName(pkgs)
-	pkgsByName := make([]map[string]interface{}, len(groups))
-	for i, group := range groups {
+	pkgsByName := make([]map[string]interface{}, 0, len(groups))
+	for _, group := range groups {
 		name := group.Key.(string)
 		if c.useNormName {
 			name = group.Pkgs[0].Metadata.NormName
@@ -43,10 +43,10 @@ func (c *listCommand) Execute(context.Context) error {
 		for i := len(groups) - 1; i >= 0; i-- {
 			versions[i] = groups[i].Key.(string)
 		}
-		pkgsByName[i] = map[string]interface{}{
+		pkgsByName = append(pkgsByName, map[string]interface{}{
 			"name":     name,
 			"versions": versions,
-		}
+		})
 	}
 	if c.json {
 		return json.NewEncoder(os.Stdout).Encode(pkgsByName)
