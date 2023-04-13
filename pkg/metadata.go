@@ -213,7 +213,10 @@ func getMetadataFromWheel(filePath string) (*Metadata, error) {
 	for _, prefix := range prefixes {
 		metadataFile = path.Join(prefix+".dist-info", "METADATA")
 		rawMeta, err = extractMemberFromZip(filePath, metadataFile)
-		if err != nil && !errors.Is(err, errArchiveMemberNotFound) {
+		if err == nil {
+			break
+		}
+		if !errors.Is(err, errArchiveMemberNotFound) {
 			return nil, err
 		}
 	}
